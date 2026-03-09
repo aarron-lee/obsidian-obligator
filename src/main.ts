@@ -68,7 +68,9 @@ export default class Obligator extends Plugin {
 		await this.loadSettings();
 
 		const run_obligator = async () => {
-			const run_create_note_logic = async (TEMPLATE_FILE) => {
+			const run_create_note_logic = async (
+				template_folder_str: string,
+			) => {
 				// ----------------------------------------------------------------
 				// Basic logical overview
 				// ----------------------------------------------------------------
@@ -111,8 +113,8 @@ export default class Obligator extends Plugin {
 					return;
 				}
 
-				TEMPLATE_FILE =
-					this.app.vault.getAbstractFileByPath(TEMPLATE_FILE);
+				const TEMPLATE_FILE =
+					this.app.vault.getAbstractFileByPath(template_folder_str);
 				// Make sure that the template file exists
 				if (TEMPLATE_FILE == undefined) {
 					if (["", null].includes(this.settings.template_path)) {

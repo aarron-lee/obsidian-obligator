@@ -82,6 +82,9 @@ export class FolderSuggest extends TextInputSuggest<TFolder> {
 }
 
 export class FileSelectionModal extends FuzzySuggestModal<TFile> {
+	templatesFolder: string;
+	onSelect: Function;
+
 	constructor(
 		app: App,
 		templatesFolder: string,
