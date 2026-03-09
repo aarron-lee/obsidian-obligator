@@ -402,6 +402,22 @@ export default class Obligator extends Plugin {
 				}
 
 				// ------------------------------------------------------------
+				// {{ previous_note_content }} macros
+				// ------------------------------------------------------------
+				if (last_note === null) {
+					template_contents = template_contents.replace(
+						/{{\s*previous_note_content\s*}}/g,
+						"",
+					);
+				} else {
+					const contents = await this.app.vault.read(last_note);
+					template_contents = template_contents.replace(
+						/{{\s*previous_note_content\s*}}/g,
+						`${contents}`,
+					);
+				}
+
+				// ------------------------------------------------------------
 				// {{ obligate }} macro
 				// ------------------------------------------------------------
 				const template_lines = template_contents.split("\n");
