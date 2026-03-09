@@ -68,6 +68,33 @@ export default class Obligator extends Plugin {
 		await this.loadSettings();
 
 		const run_obligator = async () => {
+			const note_already_exists = () => {
+				// Make sure the default value is applied if it's left blank
+				const NOW = window.moment();
+				const DATE_FORMAT =
+					this.settings.date_format || DEFAULT_SETTINGS.date_format;
+				const NOTE_NAME = NOW.format(DATE_FORMAT);
+
+				// ----------------------------------------------------------------
+				// Step 2
+				// Context: settings are valid
+				// ----------------------------------------------------------------
+				const NEW_NOTE_PATH = `${this.settings.note_path}/${NOTE_NAME}.md`;
+				const output_file =
+					this.app.vault.getAbstractFileByPath(NEW_NOTE_PATH);
+				if (output_file != undefined && output_file instanceof TFile) {
+					return output_file;
+				}
+				return;
+			};
+
+			const f = note_already_exists();
+
+			if (f) {
+				const ACTIVE_LEAF = this.app.workspace.getLeaf();
+				return await ACTIVE_LEAF.openFile(f);
+			}
+
 			const run_create_note_logic = async (
 				template_folder_str: string,
 			) => {
