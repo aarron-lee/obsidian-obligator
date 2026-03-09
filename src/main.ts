@@ -43,6 +43,7 @@ interface ObligatorSettings {
 	keep_template_headings: boolean;
 	run_on_startup: boolean;
 	keep_until_parent_complete: boolean;
+	enable_note_merge: boolean;
 }
 
 const DEFAULT_SETTINGS: ObligatorSettings = {
@@ -59,6 +60,7 @@ const DEFAULT_SETTINGS: ObligatorSettings = {
 	keep_template_headings: true,
 	run_on_startup: false,
 	keep_until_parent_complete: false,
+	enable_note_merge: false,
 };
 
 export default class Obligator extends Plugin {
@@ -516,27 +518,33 @@ export default class Obligator extends Plugin {
 				//          template has been processed
 				// ----------------------------------------------------------------
 				// Delete from last_note_structure only if this setting is true
-				if (last_note_structure) {
-					if (this.settings.keep_template_headings) {
-						filter_structure(
+
+				if (this.settings.enable_note_merge) {
+					if (last_note_structure) {
+						if (this.settings.keep_template_headings) {
+							filter_structure(
+								last_note_structure,
+								this.settings.delete_empty_headings,
+								this.settings.keep_until_parent_complete,
+							);
+						}
+						merge_structure(
+							template_structure,
 							last_note_structure,
+						);
+					}
+
+					// Delete from the merged structure is false
+					if (!this.settings.keep_template_headings) {
+						filter_structure(
+							template_structure,
 							this.settings.delete_empty_headings,
 							this.settings.keep_until_parent_complete,
 						);
 					}
-					merge_structure(template_structure, last_note_structure);
 				}
 
-				// Delete from the merged structure is false
-				if (!this.settings.keep_template_headings) {
-					filter_structure(
-						template_structure,
-						this.settings.delete_empty_headings,
-						this.settings.keep_until_parent_complete,
-					);
-				}
-
-				let new_note_lines = OUTPUT_INITIAL_LINES.concat(
+				const new_note_lines = OUTPUT_INITIAL_LINES.concat(
 					destructure(template_structure),
 				).concat(OUTPUT_TERMINAL_LINES);
 
@@ -841,6 +849,21 @@ class ObligatorSettingTab extends PluginSettingTab {
 					.setValue(this.plugin.settings.run_on_startup)
 					.onChange(async (value) => {
 						this.plugin.settings.run_on_startup = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		// --------------------------------------------------------------------
+		// Toggle for note merge
+		// --------------------------------------------------------------------
+		new Setting(containerEl)
+			.setName("Enable Note Merge")
+			.setDesc(`Smart merge newly created daily note with prior`)
+			.addToggle((toggle) => {
+				toggle
+					.setValue(this.plugin.settings.enable_note_merge)
+					.onChange(async (value) => {
+						this.plugin.settings.enable_note_merge = value;
 						await this.plugin.saveSettings();
 					});
 			});
